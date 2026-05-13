@@ -1,4 +1,4 @@
-import { StringEnum, Type } from "@mariozechner/pi-ai";
+import { StringEnum, Type } from "@earendil-works/pi-ai";
 
 export const DocumentParseSchema = Type.Object({
   path: Type.String({

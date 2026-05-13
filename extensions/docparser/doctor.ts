@@ -2,7 +2,7 @@ import {
   BorderedLoader,
   type ExtensionAPI,
   type ExtensionCommandContext,
-} from "@mariozechner/pi-coding-agent";
+} from "@earendil-works/pi-coding-agent";
 
 import { DOCTOR_COMMAND, DOCTOR_COMMAND_NAME, INSTALL_COMMAND_TIMEOUT_MS } from "./constants.ts";
 import {

@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows semantic versioning.
 
+## [2.0.0] - 2026-05-13
+
+### Breaking Changes
+
+- migrated Pi package integration from `@mariozechner/*` to `@earendil-works/*`; consumers must use the new scope
+- raised minimum supported Node.js version from `>=18` to `>=20.6.0`
+
+### Changed
+
+- upgraded `@llamaindex/liteparse` from `1.0.0` to `1.5.3`
+- updated extension imports and type usage to `@earendil-works/pi-ai` and `@earendil-works/pi-coding-agent`
+- tightened peer dependency ranges for Pi packages to `^0.74.0`
+- switched repository package management to pnpm:
+  - added `pnpm-lock.yaml`
+  - removed `bun.lock`
+  - removed `package-lock.json`
+
+### Security
+
+- added pnpm dependency hardening settings in `pnpm-workspace.yaml`:
+  - `ignoreScripts: true`
+  - `minimumReleaseAge: 4320` (3 days)
+  - `minimumReleaseAgeStrict: true`
+  - `blockExoticSubdeps: true`
+
+### Documentation
+
+- updated README runtime requirement to Node.js `20.6+`
+
 ## [1.1.1] - 2026-03-20
 
 ### Fixed

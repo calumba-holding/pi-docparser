@@ -1,4 +1,4 @@
-import { truncateTail } from "@mariozechner/pi-coding-agent";
+import { truncateTail } from "@earendil-works/pi-coding-agent";
 import { spawn } from "node:child_process";
 import { constants as fsConstants } from "node:fs";
 import { access } from "node:fs/promises";

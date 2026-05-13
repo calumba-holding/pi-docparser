@@ -1,4 +1,4 @@
-import type { Static } from "@mariozechner/pi-ai";
+import type { Static } from "@earendil-works/pi-ai";
 import type { LiteParseConfig } from "@llamaindex/liteparse";
 
 import { DocumentParseSchema } from "./schema.ts";

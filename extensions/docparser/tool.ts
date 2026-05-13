@@ -1,4 +1,4 @@
-import { truncateHead, type ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import { truncateHead, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";

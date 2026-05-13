@@ -45,7 +45,7 @@ Support for non-PDF formats may depend on host tools such as LibreOffice or Imag
 ## Requirements
 
 - pi installed and working
-- Node.js 18+
+- Node.js 20.6+
 - local machine access to the files you want to parse
 
 ## Installation
