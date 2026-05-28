@@ -20,7 +20,7 @@ export interface DocumentParseDetails {
 }
 
 export type InputCategory = "pdf" | "office" | "spreadsheet" | "image" | "other";
-export type DependencyName = "libreoffice" | "imagemagick" | "ghostscript";
+export type DependencyName = "libreoffice" | "imagemagick";
 export type PackageManagerId =
   | "brew"
   | "apt-get"
@@ -86,9 +86,10 @@ export type LiteParseToolConfig = Partial<
     | "maxPages"
     | "targetPages"
     | "dpi"
-    | "preciseBoundingBox"
     | "preserveVerySmallText"
-    | "preserveLayoutAlignmentAcrossPages"
+    | "password"
+    | "tessdataPath"
+    | "quiet"
   >
 >;
 

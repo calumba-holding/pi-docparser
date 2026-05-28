@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows semantic versioning.
 
+## [Unreleased]
+
+### Breaking Changes
+
+- upgraded `@llamaindex/liteparse` from `1.5.3` to `2.0.1` and migrated to the LiteParse v2 Node API
+- removed unsupported LiteParse v1 options from the public tool schema:
+  - `preciseBoundingBox`
+  - `preserveLayoutAlignmentAcrossPages`
+- changed default `maxPages` from `10000` to LiteParse v2's default `1000`
+- changed JSON parse output to the LiteParse v2 result shape: `{ pages, text }`
+
+### Added
+
+- added `document_search` for phrase search with page numbers and bounding boxes
+- added `document_screenshot` for direct page rendering as PNG image content blocks plus saved temp files
+- added optional `password` support for encrypted/password-protected documents
+- added optional `tessdataPath` support for offline/custom Tesseract OCR data
+- added helpful guidance when removed LiteParse v1 options are supplied
+
+### Changed
+
+- updated `document_parse` screenshot handling for the LiteParse v2 async screenshot API
+- relaxed screenshot documentation away from PDF-only behavior; LiteParse v2 can screenshot supported converted formats when host tools are installed
+- simplified host dependency checks to LibreOffice and ImageMagick in line with LiteParse v2 docs
+- updated README, skill guidance, and third-party notices for LiteParse v2 and the new tools
+
 ## [2.0.0] - 2026-05-13
 
 ### Breaking Changes

@@ -3,11 +3,7 @@ import { spawn } from "node:child_process";
 import { constants as fsConstants } from "node:fs";
 import { access } from "node:fs/promises";
 
-import {
-  DOCTOR_COMMAND,
-  GHOSTSCRIPT_REQUIRED_EXTENSIONS,
-  INSTALL_COMMAND_TIMEOUT_MS,
-} from "./constants.ts";
+import { DOCTOR_COMMAND, INSTALL_COMMAND_TIMEOUT_MS } from "./constants.ts";
 import type {
   DependencyDiagnosis,
   DependencyName,
@@ -19,7 +15,7 @@ import type {
   UnixPrivilegeContext,
 } from "./types.ts";
 
-const DEPENDENCY_NAMES = ["libreoffice", "imagemagick", "ghostscript"] as const;
+const DEPENDENCY_NAMES = ["libreoffice", "imagemagick"] as const;
 const PLATFORM_LABELS = {
   darwin: "macOS",
   linux: "Linux",
@@ -36,47 +32,38 @@ const PACKAGE_NAMES: Record<PackageManagerId, Record<DependencyName, string>> = 
   brew: {
     libreoffice: "libreoffice",
     imagemagick: "imagemagick",
-    ghostscript: "ghostscript",
   },
   "apt-get": {
     libreoffice: "libreoffice",
     imagemagick: "imagemagick",
-    ghostscript: "ghostscript",
   },
   dnf: {
     libreoffice: "libreoffice",
     imagemagick: "ImageMagick",
-    ghostscript: "ghostscript",
   },
   yum: {
     libreoffice: "libreoffice",
     imagemagick: "ImageMagick",
-    ghostscript: "ghostscript",
   },
   pacman: {
     libreoffice: "libreoffice-fresh",
     imagemagick: "imagemagick",
-    ghostscript: "ghostscript",
   },
   zypper: {
     libreoffice: "libreoffice",
     imagemagick: "ImageMagick",
-    ghostscript: "ghostscript",
   },
   apk: {
     libreoffice: "libreoffice",
     imagemagick: "imagemagick",
-    ghostscript: "ghostscript",
   },
   winget: {
     libreoffice: "TheDocumentFoundation.LibreOffice",
     imagemagick: "ImageMagick.Q16",
-    ghostscript: "ArtifexSoftware.GhostScript",
   },
   choco: {
     libreoffice: "libreoffice-fresh",
     imagemagick: "imagemagick.app",
-    ghostscript: "ghostscript",
   },
 };
 const BREW_CASK_DEPENDENCIES = new Set<DependencyName>(["libreoffice"]);
@@ -88,11 +75,7 @@ const LINUX_MANAGERS: Array<{ id: PackageManagerId; label: string }> = [
   { id: "zypper", label: "zypper" },
   { id: "apk", label: "apk" },
 ];
-const DEPENDENCY_SETUP_PATTERNS = [
-  "LibreOffice is not installed",
-  "ImageMagick is not installed",
-  "Ghostscript is required",
-];
+const DEPENDENCY_SETUP_PATTERNS = ["LibreOffice is not installed", "ImageMagick is not installed"];
 
 async function spawnSucceeded(command: string, args: string[]): Promise<boolean> {
   return new Promise((resolve) => {
@@ -199,13 +182,6 @@ function buildGuidedInstallMessage(
     : "";
 
   return `${summary}${requirement}. On macOS: ${macCommand}, On Ubuntu: ${ubuntuCommand}, On Windows: ${windowsCommand}`;
-}
-
-function formatGhostscriptMissingMessage(extension: string): string {
-  const fileTypeLabel = (extension || "vector").replace(/^\./, "").toUpperCase();
-  return buildGuidedInstallMessage("ghostscript", `Ghostscript is required but is not installed`, {
-    requiredForFileType: fileTypeLabel,
-  });
 }
 
 function getLinuxInstallArgs(managerId: PackageManagerId, packageNames: string[]): string[] {
@@ -379,14 +355,6 @@ const DEPENDENCY_METADATA: Record<
         "ImageMagick is not installed. Please install ImageMagick to convert images",
       ),
   },
-  ghostscript: {
-    label: "Ghostscript",
-    summary:
-      "Needed for vector image conversion paths such as SVG, EPS, PS, and AI when ImageMagick delegates rendering.",
-    findCommand: () => findFirstAvailableCommand(["gs", "gswin64c", "gswin32c"]),
-    getMissingMessage: (inspection) =>
-      formatGhostscriptMissingMessage(inspection?.extension || ".svg"),
-  },
 };
 
 export function getRelevantDependencyNames(inspection?: InputInspection): Set<DependencyName> {
@@ -400,13 +368,6 @@ export function getRelevantDependencyNames(inspection?: InputInspection): Set<De
       : inspection.category === "image"
         ? new Set<DependencyName>(["imagemagick"])
         : new Set<DependencyName>();
-
-  if (
-    inspection.category === "image" &&
-    GHOSTSCRIPT_REQUIRED_EXTENSIONS.has(inspection.extension)
-  ) {
-    relevantDependencies.add("ghostscript");
-  }
 
   return relevantDependencies;
 }

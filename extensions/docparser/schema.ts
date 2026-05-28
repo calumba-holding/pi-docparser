@@ -18,7 +18,7 @@ export const DocumentParseSchema = Type.Object({
   screenshotPages: Type.Optional(
     Type.String({
       description:
-        'Optional PDF page selection for screenshots, e.g. "1-3,8" or "all". Screenshots are currently generated only for PDF inputs and are saved as PNG files.',
+        'Optional page selection for screenshots, e.g. "1-3,8" or "all". Screenshots are saved as PNG files.',
     }),
   ),
   ocr: Type.Optional(
@@ -54,7 +54,7 @@ export const DocumentParseSchema = Type.Object({
   maxPages: Type.Optional(
     Type.Integer({
       minimum: 1,
-      description: "Maximum number of pages to parse (default: 10000)",
+      description: "Maximum number of pages to parse (default: 1000, matching LiteParse v2)",
     }),
   ),
   dpi: Type.Optional(
@@ -63,20 +63,20 @@ export const DocumentParseSchema = Type.Object({
       description: "Rendering DPI for OCR and screenshots (default: 150)",
     }),
   ),
-  preciseBoundingBox: Type.Optional(
-    Type.Boolean({
-      description: "Whether to compute precise bounding boxes (default: true)",
-    }),
-  ),
   preserveSmallText: Type.Optional(
     Type.Boolean({
       description: "Whether to preserve very small text that would otherwise be filtered out",
     }),
   ),
-  preserveLayoutAlignmentAcrossPages: Type.Optional(
-    Type.Boolean({
+  password: Type.Optional(
+    Type.String({
+      description: "Optional password for encrypted or password-protected documents",
+    }),
+  ),
+  tessdataPath: Type.Optional(
+    Type.String({
       description:
-        "Whether to preserve text alignment consistently across page boundaries (default: false)",
+        "Optional path to a directory containing Tesseract .traineddata files for offline/custom OCR data",
     }),
   ),
 });

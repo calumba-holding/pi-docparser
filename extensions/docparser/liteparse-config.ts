@@ -2,13 +2,35 @@ import { DEFAULT_DPI, DEFAULT_MAX_PAGES, DEFAULT_NUM_WORKERS } from "./constants
 import { resolveScreenshotSelection } from "./input.ts";
 import type { DocumentParseParams, DocumentParsePlan, LiteParseToolConfig } from "./types.ts";
 
+export const REMOVED_V1_OPTIONS = [
+  "preciseBoundingBox",
+  "preserveLayoutAlignmentAcrossPages",
+] as const;
+
+export function getRemovedV1OptionsMessage(optionNames: string[]): string {
+  const options = optionNames.map((name) => `\`${name}\``).join(", ");
+  return [
+    `Unsupported LiteParse v1 option${optionNames.length === 1 ? "" : "s"}: ${options}.`,
+    "This package now uses LiteParse v2, which no longer exposes those options.",
+    "Alternative routes for agents: use JSON output for text item bounding boxes, use document_search to locate phrases with bounding boxes, use document_screenshot for visual layout checks, or narrow work with targetPages.",
+  ].join(" ");
+}
+
+export function getProvidedRemovedV1Options(rawParams: unknown): string[] {
+  if (!rawParams || typeof rawParams !== "object") {
+    return [];
+  }
+
+  return REMOVED_V1_OPTIONS.filter((optionName) => optionName in rawParams);
+}
+
 function normalizeOptionalString(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
 }
 
-function resolveOcrLanguage(
-  params: DocumentParseParams,
+export function resolveOcrLanguage(
+  params: Pick<DocumentParseParams, "ocrLanguage" | "ocrLanguages">,
   ocrServerUrl: string | undefined,
   warnings: string[],
 ): LiteParseToolConfig["ocrLanguage"] | undefined {
@@ -38,12 +60,28 @@ function resolveOcrLanguage(
   return ocrLanguages.join("+");
 }
 
-export function buildDocumentParsePlan(params: DocumentParseParams): DocumentParsePlan {
-  const warnings: string[] = [];
+export function buildLiteParseConfig(
+  params: Pick<
+    DocumentParseParams,
+    | "format"
+    | "ocr"
+    | "ocrLanguage"
+    | "ocrLanguages"
+    | "ocrServerUrl"
+    | "numWorkers"
+    | "maxPages"
+    | "targetPages"
+    | "dpi"
+    | "preserveSmallText"
+    | "password"
+    | "tessdataPath"
+  >,
+  warnings: string[],
+): LiteParseToolConfig {
   const ocrServerUrl = normalizeOptionalString(params.ocrServerUrl);
   const ocrLanguage = resolveOcrLanguage(params, ocrServerUrl, warnings);
 
-  const parserConfig: LiteParseToolConfig = {
+  return {
     outputFormat: params.format ?? "text",
     ocrEnabled: (params.ocr ?? "auto") !== "off",
     ocrLanguage,
@@ -52,10 +90,16 @@ export function buildDocumentParsePlan(params: DocumentParseParams): DocumentPar
     maxPages: params.maxPages ?? DEFAULT_MAX_PAGES,
     targetPages: normalizeOptionalString(params.targetPages),
     dpi: params.dpi ?? DEFAULT_DPI,
-    preciseBoundingBox: params.preciseBoundingBox ?? true,
     preserveVerySmallText: params.preserveSmallText ?? false,
-    preserveLayoutAlignmentAcrossPages: params.preserveLayoutAlignmentAcrossPages ?? false,
+    password: normalizeOptionalString(params.password),
+    tessdataPath: normalizeOptionalString(params.tessdataPath),
+    quiet: true,
   };
+}
+
+export function buildDocumentParsePlan(params: DocumentParseParams): DocumentParsePlan {
+  const warnings: string[] = [];
+  const parserConfig = buildLiteParseConfig(params, warnings);
 
   return {
     parserConfig,

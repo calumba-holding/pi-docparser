@@ -10,7 +10,12 @@ import {
   isDependencySetupMessage,
 } from "./deps.ts";
 import { resolveDocumentTarget } from "./input.ts";
-import { buildDocumentParsePlan } from "./request.ts";
+import { loadLiteParseModule } from "./liteparse-module.ts";
+import {
+  buildDocumentParsePlan,
+  getProvidedRemovedV1Options,
+  getRemovedV1OptionsMessage,
+} from "./liteparse-config.ts";
 import { DocumentParseSchema } from "./schema.ts";
 import type {
   DocumentParseDetails,
@@ -19,13 +24,6 @@ import type {
   InputInspection,
   ScreenshotSelection,
 } from "./types.ts";
-
-let liteParseModulePromise: Promise<typeof import("@llamaindex/liteparse")> | undefined;
-
-async function loadLiteParseModule(): Promise<typeof import("@llamaindex/liteparse")> {
-  liteParseModulePromise ??= import("@llamaindex/liteparse");
-  return liteParseModulePromise;
-}
 
 function buildFriendlyErrorMessage(
   error: unknown,
@@ -65,7 +63,6 @@ async function renderScreenshots(options: {
     screenshot(
       filePath: string,
       pageNumbers?: number[],
-      quiet?: boolean,
     ): Promise<Array<{ pageNum: number; imageBuffer: Buffer }>>;
   };
   screenshotSelection?: ScreenshotSelection;
@@ -94,19 +91,11 @@ async function renderScreenshots(options: {
     return { screenshotCount: 0, warnings };
   }
 
-  if (options.inspection.category !== "pdf") {
-    warnings.push(
-      "Screenshots were requested, but this extension currently generates screenshots only for PDF inputs. The document was parsed, but screenshots were skipped.",
-    );
-    return { screenshotCount: 0, warnings };
-  }
-
   try {
     options.emit(`Rendering screenshots for ${selection.description}...`);
     const screenshots = await options.parser.screenshot(
       options.resolvedPath,
       selection.pageNumbers,
-      true,
     );
     const screenshotDir = join(options.outputDir, "screenshots");
     await mkdir(screenshotDir, { recursive: true });
@@ -201,12 +190,13 @@ export function registerDocumentParseTool(pi: ExtensionAPI) {
     name: "document_parse",
     label: "Document Parse",
     description:
-      "Parse local documents with bundled LiteParse support. Supports PDF, DOCX, PPTX, XLSX, CSV, and common images. Returns parsed output saved to temp files plus metadata and optional PDF screenshots.",
+      "Parse local documents with bundled LiteParse v2 support. Supports PDF, DOCX, PPTX, XLSX, CSV, and common images. Returns parsed text or JSON saved to temp files plus metadata and optional screenshots.",
     promptSnippet:
-      "Parse local documents to text or JSON with OCR, bounding boxes, page ranges, and optional PDF screenshots. Full results are saved to temp files for follow-up inspection with read.",
+      "Parse local documents to text or JSON with OCR, bounding boxes, page ranges, password support, offline OCR data, and optional screenshots. Full results are saved to temp files for follow-up inspection with read.",
     promptGuidelines: [
       "Use this tool instead of composing LiteParse CLI commands manually when the user wants local document parsing.",
       "After this tool returns output or screenshot paths, use read on those files when you need the full parsed content or to inspect generated screenshots.",
+      "Do not use removed LiteParse v1 options preciseBoundingBox or preserveLayoutAlignmentAcrossPages. Use JSON bounding boxes, document_search, document_screenshot, or targetPages instead.",
     ],
     parameters: DocumentParseSchema,
 
@@ -223,6 +213,11 @@ export function registerDocumentParseTool(pi: ExtensionAPI) {
           content: [{ type: "text", text }],
           details: {},
         });
+      const removedOptions = getProvidedRemovedV1Options(rawParams);
+      if (removedOptions.length > 0) {
+        throw new Error(getRemovedV1OptionsMessage(removedOptions));
+      }
+
       const params = rawParams as DocumentParseParams;
 
       try {
@@ -244,12 +239,10 @@ export function registerDocumentParseTool(pi: ExtensionAPI) {
         const outputDir = await mkdtemp(join(tmpdir(), "pi-document-parse-"));
 
         emit(`Parsing document: ${input.sourcePath}`);
-        const parseResult = await parser.parse(input.resolvedPath, true);
+        const parseResult = await parser.parse(input.resolvedPath);
         const outputFormat = plan.parserConfig.outputFormat ?? "text";
         const outputText =
-          outputFormat === "json"
-            ? JSON.stringify(parseResult.json ?? { pages: [] }, null, 2)
-            : parseResult.text;
+          outputFormat === "json" ? JSON.stringify(parseResult, null, 2) : parseResult.text;
         const outputPath = join(outputDir, outputFormat === "json" ? "parsed.json" : "parsed.txt");
         await writeFile(outputPath, outputText, "utf8");
         emit(`Saved parsed output to ${outputPath}`);

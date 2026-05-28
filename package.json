@@ -1,7 +1,7 @@
 {
   "name": "pi-docparser",
   "version": "2.0.0",
-  "description": "Pi package that adds a document_parse tool and companion skill for parsing PDFs, Office documents, spreadsheets, and images with LiteParse.",
+  "description": "Pi package that adds document_parse, document_search, document_screenshot, and a companion skill for local document understanding with LiteParse v2.",
   "keywords": [
     "document-parse",
     "documents",
@@ -43,7 +43,7 @@
     "pack:dry": "npm pack --dry-run"
   },
   "dependencies": {
-    "@llamaindex/liteparse": "1.5.3"
+    "@llamaindex/liteparse": "2.0.1"
   },
   "devDependencies": {
     "@earendil-works/pi-ai": "0.74.0",
